@@ -50,7 +50,7 @@ const placeSchema = new mongoose.Schema({
     seasonToGo: String,
     visited: Boolean
 })
-const Place = mongoose.model("Place", placeSchema)
+const Places = mongoose.model("Places", placeSchema)
 
 
 /////////////////////////////////
@@ -74,7 +74,34 @@ app.get("/", (req, res) => {
     res.json({hello: "world"})
 })
 
+// INDEX - GET - ALL PLACES
+app.get("/places", async(req, res) => {
+    try {
+        const places = await Places.find({});
+        res.json(places);
+} catch (err) {
+    res.status(500).json({err});
+}
+});
 
+
+
+// CREATE - POST - NEW PLACE
+
+
+
+
+// SHOW - GET - SINGLE PLACE
+
+
+
+
+// UPDATE - PUT - SINGLE PLACE
+
+
+
+
+// DELETE - DELETE - SINGLE PLACE
 
 
 
