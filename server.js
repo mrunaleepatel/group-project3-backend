@@ -87,9 +87,15 @@ app.get("/places", async(req, res) => {
 
 
 // CREATE - POST - NEW PLACE
-
-
-
+app.post("/places", async (req, res) => {
+    try {
+        const place = await Places.create(req.body)
+        res.json(place)
+    }
+    catch(error){
+        res.status(400).json({ error })
+    }
+})
 
 // SHOW - GET - SINGLE PLACE
 
