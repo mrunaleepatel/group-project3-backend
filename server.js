@@ -100,18 +100,24 @@ app.post("/places", async (req, res) => {
 // SHOW - GET - SINGLE PLACE
 app.get("/places/:id", async (req, res) => {
     try {
-      const places = await Places.findById(req.params.id);
-      res.json(places);
+      const place = await Places.findById(req.params.id);
+      res.json(place);
     } catch (error) {
       res.status(400).json({ error });
     }
 });
 
 
-
 // UPDATE - PUT - SINGLE PLACE
 
-
+app.put("/places/:id", async (req, res) => {
+    try {
+        const place = await Places.findByIdAndUpdate(req.params.id, req.body, {new: true})
+        res.json(place)
+    } catch (error) {
+        res.status(400).json({error})
+    }
+})
 
 
 // DELETE - DELETE - SINGLE PLACE
