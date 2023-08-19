@@ -121,13 +121,16 @@ app.put("/places/:id", async (req, res) => {
 
 
 // DELETE - DELETE - SINGLE PLACE
-
-
-
-
-
-
-
+app.delete("/places/:id", async (req, res) => {
+    try {
+      
+      const place = await Places.findByIdAndDelete(req.params.id);
+      
+      res.status(204).json(place);
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+});
 
 ////////////////////////////
 // LISTENER
