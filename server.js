@@ -98,7 +98,14 @@ app.post("/places", async (req, res) => {
 })
 
 // SHOW - GET - SINGLE PLACE
-
+app.get("/places/:id", async (req, res) => {
+    try {
+      const places = await Places.findById(req.params.id);
+      res.json(places);
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+});
 
 
 
