@@ -46,7 +46,7 @@ const placeSchema = new mongoose.Schema({
     type: String,
     image: String,
     url: String,
-    description: String,
+    notes: String,
     seasonToGo: String,
     visited: Boolean
 })
