@@ -1,16 +1,18 @@
-# **Project Name: TBD**
+# **Project Name: BonVoyage**
 ## **Project By:** Arielle Gironza, Harpreet Singh, Je Min Yun, Mrunalee Patel
 
 [**Link to GitHub**](https://github.com/mrunaleepatel/group-project3-backend)
 
-[**Link to Deployed Site**]()
+[**Link to Deployed Site**](https://group-project3-backend.onrender.com/)
 
 [**Link to Group Trello**](https://trello.com/b/8FuriwSl/ga-seir-kale-p3)
 
 
 ### Description of Project
+BonVoyage! Your personalized digital companion to streamline and enhance your travel aspirations! Effortlessly create and manage destinations you’ve visited and wish to visit. With BonVoyage, each destination becomes a chapter and every adventure is crafted to reflect your desires.
 
 ### Technologies used
+HTML, CSS, SASS, JavaScript, MongoDB, Express.js, ReactJS
 
 ### List of Backend Routes
 |ENDPOINT|METHOD|PURPOSE|
