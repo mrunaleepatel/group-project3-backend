@@ -22,6 +22,12 @@ const cors = require("cors");
 // Import morgan
 const morgan = require("morgan");
 
+const cookieParser = require("cookie-parser");
+// import bcrypt  
+const bcrypt = require("bcryptjs")
+// import jwt
+const jwt = require("jsonwebtoken")
+
 
 /////////////////////////////////
 // DATABASE CONNECTION
@@ -38,8 +44,18 @@ mongoose.connection
 .on("error", (error) => console.log(error))
 
 /////////////////////////////////
-// MODEL
+// MODELS
 /////////////////////////////////
+
+// User Model \\
+
+const UserSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: {type: String, required: true},
+  });
+  
+const User = mongoose.model("User", UserSchema);
+
 const placeSchema = new mongoose.Schema({
     name: String,
     country: String,
@@ -48,17 +64,42 @@ const placeSchema = new mongoose.Schema({
     url: String,
     notes: String,
     seasonToGo: String,
-    visited: Boolean
+    visited: Boolean,
+    username: String
 })
+
 const Places = mongoose.model("Places", placeSchema)
+////////////////////////////////
+// Custome Middleware Auth
+////////////////////////////////
+async function authCheck(req, res, next){
+    // check if the request has a cookie
+    if(req.cookies.token){
+      // if there is a cookie, try to decode it
+      const payload = await jwt.verify(req.cookies.token, process.env.SECRET)
+      // store the payload in the request
+      req.payload = payload;
+      // move on to the next piece of middleware
+      next();
+    } else {
+      // if there is no cookie, return error
+      res.status(400).json({ error: "You are not authorized" });
+    }
+  }
 
 
 /////////////////////////////////
 // MIDDLEWARE
 /////////////////////////////////
 // cors for preventing cors errors
-app.use(cors())
-
+app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
+// cookie parser
+app.use(cookieParser());
 // morgan for logging requests
 app.use(morgan("dev"))
 
@@ -75,9 +116,9 @@ app.get("/", (req, res) => {
 })
 
 // INDEX - GET - ALL PLACES
-app.get("/places", async(req, res) => {
+app.get("/places", authCheck, async (req, res) => {
     try {
-        const places = await Places.find({});
+        const places = await Places.find({username: req.payload.username});
         res.json(places);
 } catch (err) {
     res.status(500).json({err});
@@ -87,8 +128,9 @@ app.get("/places", async(req, res) => {
 
 
 // CREATE - POST - NEW PLACE
-app.post("/places", async (req, res) => {
+app.post("/places", authCheck, async (req, res) => {
     try {
+        req.body.username = req.payload.username;
         const place = await Places.create(req.body)
         res.json(place)
     }
@@ -98,7 +140,7 @@ app.post("/places", async (req, res) => {
 })
 
 // SHOW - GET - SINGLE PLACE
-app.get("/places/:id", async (req, res) => {
+app.get("/places/:id", authCheck, async (req, res) => {
     try {
       const place = await Places.findById(req.params.id);
       res.json(place);
@@ -110,9 +152,11 @@ app.get("/places/:id", async (req, res) => {
 
 // UPDATE - PUT - SINGLE PLACE
 
-app.put("/places/:id", async (req, res) => {
+app.put("/places/:id", authCheck, async (req, res) => {
     try {
-        const place = await Places.findByIdAndUpdate(req.params.id, req.body, {new: true})
+        const place = await Places.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+        })
         res.json(place)
     } catch (error) {
         res.status(400).json({error})
@@ -121,7 +165,7 @@ app.put("/places/:id", async (req, res) => {
 
 
 // DELETE - DELETE - SINGLE PLACE
-app.delete("/places/:id", async (req, res) => {
+app.delete("/places/:id", authCheck, async (req, res) => {
     try {
       
       const place = await Places.findByIdAndDelete(req.params.id);
@@ -131,6 +175,76 @@ app.delete("/places/:id", async (req, res) => {
       res.status(400).json({ error });
     }
 });
+
+////////////////////////////
+// AUTH Routes
+////////////////////////////
+app.post("/signup", async (req, res) => {
+    try {
+      // deconstruct the username and password from the body
+      let { username, password } = req.body;
+      // hash the password
+      password = await bcrypt.hash(password, await bcrypt.genSalt(10));
+      // create a new user in the database
+      const user = await User.create({ username, password });
+      // send the new user as json
+      res.json(user);
+    } catch(error){
+      res.status(400).json({error})
+    }
+  })
+
+ app.post("/login", async (req, res) => {
+    try {
+      // deconstruct the username and password from the body
+      const { username, password } = req.body;
+      // search the database for a user with the provided username
+      const user = await User.findOne({ username });
+      console.log(user)
+      // if no user is found, return an error
+      if (!user) {
+        throw new Error("No user with that username found");
+      }
+      // if a user is found, let's compare the provided password with the password on the user object
+      console.log(password, user)
+      const passwordCheck = await bcrypt.compare(password, user.password);
+      // if the passwords don't match, return an error
+      if (!passwordCheck) {
+        throw new Error("Password does not match");
+      }
+      // create a token with the username in the payload
+      const token = jwt.sign({ username: user.username }, process.env.SECRET);
+      // send a response with a cooke that includes the token
+      res.cookie("token", token, {
+        // can only be accessed by server requests
+        httpOnly: true,
+        // path = where the cookie is valid
+        path: "/",
+        // domain = what domain the cookie is valid on
+        domain: "localhost",
+        // secure = only send cookie over https
+        secure: false,
+        // sameSite = only send cookie if the request is coming from the same origin
+        sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+        // maxAge = how long the cookie is valid for in milliseconds
+        maxAge: 3600000, // 1 hour
+      });
+      // send the user as json
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // get /cookietest to test our cookie
+app.get("/cookietest", (req, res) => {
+    res.json(req.cookies);
+  })
+
+app.get("/logout", (req, res) => {
+    res.clearCookie("token");
+    res.json({ message: "You have been logged out" });
+  })
 
 ////////////////////////////
 // LISTENER
