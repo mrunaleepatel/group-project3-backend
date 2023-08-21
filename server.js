@@ -94,7 +94,7 @@ async function authCheck(req, res, next){
 // cors for preventing cors errors
 app.use(
     cors({
-      origin: "*",
+      origin: "http://localhost:3001",
       credentials: true,
     })
   );
