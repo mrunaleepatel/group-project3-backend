@@ -94,8 +94,8 @@ async function authCheck(req, res, next){
 // cors for preventing cors errors
 app.use(
     cors({
-      origin: "http://localhost:3001",
-      // origin: "https://group-project3-backend.onrender.com",
+      // origin: "http://localhost:3001",
+      origin: "https://group-project3-frontend.vercel.app",
       credentials: true,
     })
   );
