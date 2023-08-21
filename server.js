@@ -94,7 +94,7 @@ async function authCheck(req, res, next){
 // cors for preventing cors errors
 app.use(
     cors({
-      origin: "https://project3-frontend-qvux.onrender.com",
+      origin: "http://localhost:3000",
       credentials: true,
     })
   );
@@ -121,7 +121,7 @@ app.get("/places", authCheck, async (req, res) => {
         const places = await Places.find({username: req.payload.username});
         res.json(places);
 } catch (err) {
-    res.status(500).json({err});
+    res.status(400).json({err});
 }
 });
 
@@ -200,13 +200,12 @@ app.post("/signup", async (req, res) => {
       const { username, password } = req.body;
       // search the database for a user with the provided username
       const user = await User.findOne({ username });
-      console.log(user)
       // if no user is found, return an error
       if (!user) {
         throw new Error("No user with that username found");
       }
       // if a user is found, let's compare the provided password with the password on the user object
-      console.log(password, user)
+    
       const passwordCheck = await bcrypt.compare(password, user.password);
       // if the passwords don't match, return an error
       if (!passwordCheck) {
