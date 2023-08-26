@@ -95,7 +95,7 @@ async function authCheck(req, res, next){
 app.use(
     cors({
       // origin: "http://localhost:3000",
-      origin: "https://group-project3-frontend.vercel.app",
+      origin: "https://project3-frontend-qvux.onrender.com",
       credentials: true,
     })
   );
